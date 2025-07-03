@@ -1,0 +1,153 @@
+﻿@model List<ClinicaACME.Models.Atendimento>
+@{
+    ViewData["Title"] = "Atendimentos";
+    var pacientes = ViewBag.Pacientes as List<Paciente>;
+}
+
+<div class="text-center">
+    <h1 class="display-4">Atendimentos</h1>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+        <button type="button" class="btn btn-success btnCadastrarAtendimento" data-bs-toggle="modal" data-bs-target="#modalAtendimento">
+            Registrar Atendimento
+        </button>
+    </div>
+    <br />
+    <form method="get" class="mb-3">
+        <select name="pacienteId" class="form-select mb-1">
+            <option value="">-- Paciente --</option>
+            @foreach (var p in pacientes)
+            {
+                <option value="@p.Id">@p.Nome</option>
+            }
+        </select>
+        <input type="date" name="dataInicio" class="form-control mb-1" />
+        <input type="date" name="dataFim" class="form-control mb-1" />
+        <select name="status" class="form-select mb-1">
+            <option value="">-- Status --</option>
+            <option value="Ativo">Ativo</option>
+            <option value="Inativo">Inativo</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+    <br />
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Paciente</th>
+                <th scope="col">Data e Hora</th>
+                <th scope="col">Descrição do Atendimento</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var atendimento in Model)
+            {
+                <tr>
+                    <td>@atendimento.Paciente?.Nome</td>
+                    <td>@atendimento.Data.ToString("g")</td>
+                    <td>@atendimento.Descricao</td>
+                    <td>@(atendimento.Status ? "Ativo" : "Inativo")</td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-sm btnEditarPaciente"
+                                data-id="@atendimento.Id"
+                                data-nome="@atendimento.Paciente.Nome"
+                                data-dataNascimento="@atendimento.Data"
+                                data-cpf="@atendimento.Descricao"
+                                data-status="@atendimento.Status"
+                                data-bs-toggle="modal" data-bs-target="#modalPaciente">
+                            Editar
+                        </button>
+                        <a class="btn btn-warning btn-sm" href="@Url.Action("Inativar", new { id = atendimento.Id })">Inativar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="modalAtendimento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cadastro de Atendimento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="formAtendimento" asp-action="Create" asp-controller="Atendimentos">
+                    <input type="hidden" id="atendimentoId" name="Id" />
+
+                    <div class="mb-3">
+                        <label for="pacienteId" class="form-label">Paciente</label>
+                        <select class="form-select" id="pacienteId" name="PacienteId" required>
+                            <option value="">Selecione um paciente</option>
+                            @foreach (var p in pacientes)
+                            {
+                                <option value="@p.Id">@p.Nome</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dataHora" class="form-label">Data e Hora</label>
+                        <input type="datetime-local" class="form-control" id="dataHora" name="DataHora" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição do Atendimento</label>
+                        <textarea class="form-control" id="descricao" name="Descricao" rows="10" placeholder="Descreva o atendimento realizado" required></textarea>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <label class="form-check-label" for="statusAtendimento">Status</label>
+                        <input class="form-check-input" type="checkbox" id="statusAtendimento" name="Status" value="true" onchange="statusTextoAtendimento()">
+                        <span id="statusAtendimentoTexto" class="ms-2 text-muted">Inativo</span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function statusTextoAtendimento() {
+            const status = document.getElementById('statusAtendimento').checked;
+            document.getElementById('statusAtendimentoTexto').textContent = status ? 'Ativo' : 'Inativo';
+        }
+
+        document.querySelector('.btnCadastrarAtendimento').addEventListener('click', function () {
+            const form = document.getElementById('formAtendimento');
+            form.reset();
+            form.action = '@Url.Action("Create", "Atendimentos")';
+            document.querySelector('#modalAtendimento .modal-title').textContent = 'Cadastro de Atendimento';
+            statusTextoAtendimento();
+        });
+
+        document.querySelectorAll('.btnEditarAtendimento').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const pacienteId = this.getAttribute('data-pacienteid');
+                const dataHora = this.getAttribute('data-datahora');
+                const descricao = this.getAttribute('data-descricao');
+                const status = this.getAttribute('data-status');
+
+                document.getElementById('atendimentoId').value = id;
+                document.getElementById('pacienteId').value = pacienteId;
+                document.getElementById('dataHora').value = dataHora;
+                document.getElementById('descricao').value = descricao;
+                document.getElementById('statusAtendimento').checked = (status === 'True' || status === 'true');
+
+                document.querySelector('#modalAtendimento .modal-title').textContent = 'Editar Atendimento';
+                formAtendimento.action = '@Url.Action("Create", "Atendimentos")';
+
+                statusTextoAtendimento();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,247 @@
+﻿@model List<ClinicaACME.Models.Paciente>
+
+@{
+    ViewData["Title"] = "Lista de Pacientes";
+    string statusFiltro = ViewBag.FiltroStatus;
+}
+
+<div class="text-center">
+    <h1 class="display-4">Pacientes</h1>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+        <button type="button" class="btn btn-success btnCadastrarPaciente" data-bs-toggle="modal" data-bs-target="#modalPaciente">
+            Cadastrar Paciente
+        </button>
+    </div>
+    <br />
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Data de Nascimento</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Sexo</th>
+                <th scope="col">Cidade</th>
+                <th scope="col">Bairro</th>
+                <th scope="col">Rua</th>
+                <th scope="col">Número</th>
+                <th scope="col">Status</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var paciente in Model)
+            {
+                <tr>
+                    <td>@paciente.Nome</td>
+                    <td>@paciente.DataNascimento</td>
+                    <td>@paciente.CPF</td>
+                    <td>@paciente.Genero</td>
+                    <td>@paciente.Endereco.Cidade</td>
+                    <td>@paciente.Endereco.Bairro</td>
+                    <td>@paciente.Endereco.Rua</td>
+                    <td>@paciente.Endereco.Nro</td>
+                    <td>@(paciente.Status ? "Ativo" : "Inativo")</td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-sm btnEditarPaciente"
+                                data-id="@paciente.Id"
+                                data-nome="@paciente.Nome"
+                                data-dataNascimento="@paciente.DataNascimento.ToString("dd-MM-yyyy")"
+                                data-cpf="@paciente.CPF"
+                                data-genero="@paciente.Genero"
+                                data-status="@paciente.Status"
+                                data-cep="@paciente.Endereco?.CEP"
+                                data-cidade="@paciente.Endereco?.Cidade"
+                                data-bairro="@paciente.Endereco?.Bairro"
+                                data-rua="@paciente.Endereco?.Rua"
+                                data-nro="@paciente.Endereco?.Nro"
+                                data-complemento="@paciente.Endereco?.Complemento"
+                                data-bs-toggle="modal" data-bs-target="#modalPaciente">
+                            Editar
+                        </button>
+                        <a class="btn btn-warning btn-sm" href="@Url.Action("Inativar", new { id = paciente.Id })">Inativar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="modalPaciente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cadastro de Paciente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="formPaciente" asp-action="Create" asp-controller="Pacientes" class="container-fluid">
+                    <input type="hidden" id="Id" name="Id" />
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nome" name="Nome" placeholder="Nome do paciente">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="dataNascimento" name="DataNascimento">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="cpf" class="form-label">CPF</label>
+                            <input type="text" class="form-control" id="cpf" name="CPF" placeholder="CPF">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label d-block">Gênero</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="Genero" id="generoMasculino" value="0" checked>
+                            <label class="form-check-label" for="generoMasculino">Masculino</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="Genero" id="generoFeminino" value="1">
+                            <label class="form-check-label" for="generoFeminino">Feminino</label>
+                        </div>
+                    </div>
+
+                    <fieldset class="border p-3 rounded mb-3">
+                        <legend class="float-none w-auto px-2">Endereço</legend>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="cep" class="form-label">CEP</label>
+                                <input type="text" class="form-control" id="cep" name="Endereco.CEP" maxlength="9" />
+                            </div>
+                            <div class="col-md-8">
+                                <label for="rua" class="form-label">Rua</label>
+                                <input type="text" class="form-control" id="rua" name="Endereco.Rua" readonly />
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label for="nro" class="form-label">Número</label>
+                                <input type="text" class="form-control" id="nro" name="Endereco.Nro" />
+                            </div>
+                            <div class="col-md-5">
+                                <label for="bairro" class="form-label">Bairro</label>
+                                <input type="text" class="form-control" id="bairro" name="Endereco.Bairro" readonly />
+                            </div>
+                            <div class="col-md-5">
+                                <label for="cidade" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="cidade" name="Endereco.Cidade" readonly />
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <label for="complemento" class="form-label">Complemento</label>
+                                <input type="text" class="form-control" id="complemento" name="Endereco.Complemento" />
+                            </div>
+                        </div>
+                        <input type="hidden" id="enderecoEncontrado" name="EnderecoEncontrado" value="true" />
+                    </fieldset>
+                    <div class="form-check form-switch">
+                        <label class="form-check-label" for="status">Status</label>
+                        <input class="form-check-input" type="checkbox" id="status" name="Status" value="true" onchange="statusTexto()">
+                        <span id="statusTexto" class="ms-2 text-muted">Inativo</span>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+
+        document.querySelectorAll('.btnEditarPaciente').forEach(btn => {
+            btn.addEventListener('click', function() {
+
+                const id = this.getAttribute('data-id');
+                const nome = this.getAttribute('data-nome');
+                const dataNascimento = this.getAttribute('data-dataNascimento');
+                const cpf = this.getAttribute('data-cpf');
+                const status = this.getAttribute('data-status');
+                const genero = this.getAttribute('data-genero');
+                const cep = this.getAttribute('data-cep');
+                const rua = this.getAttribute('data-rua');
+                const nro = this.getAttribute('data-nro');
+                const bairro = this.getAttribute('data-bairro');
+                const cidade = this.getAttribute('data-cidade');
+                const complemento = this.getAttribute('data-complemento');
+
+                document.getElementById('Id').value = id;
+                document.getElementById('nome').value = nome;
+                document.getElementById('dataNascimento').value = dataNascimento;
+                document.getElementById('cpf').value = cpf;
+                if (genero === '0') {
+                    document.getElementById('generoMasculino').checked = true;
+                } else if (genero === '1') {
+                    document.getElementById('generoFeminino').checked = true;
+                    }
+                document.getElementById('cep').value = cep;
+                document.getElementById('rua').value = rua;
+                document.getElementById('nro').value = nro;
+                document.getElementById('bairro').value = bairro;
+                document.getElementById('cidade').value = cidade;
+                document.getElementById('complemento').value = complemento;
+                document.getElementById('status').checked = (status === 'True' || status === 'true');
+
+                statusTexto();
+
+                document.querySelector('#modalPaciente .modal-title').textContent = 'Editar Paciente';
+
+                form.action = '@Url.Action("Update", "Pacientes")';
+            })
+        })
+
+        document.querySelector('.btnCadastrarPaciente').addEventListener('click', function() {
+            const form = document.getElementById('formPaciente');
+            form.reset();
+            form.action = '@Url.Action("Create", "Pacientes")';
+            document.querySelector('#modalPaciente .modal-title').textContent = 'Cadastro de Paciente';
+
+            statusTexto();
+        })
+
+        document.getElementById('cep').addEventListener('blur', function () {
+            const cep = this.value.replace(/\D/g, '');
+
+            if (cep.length === 8) {
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            document.getElementById('rua').value = data.logradouro;
+                            document.getElementById('bairro').value = data.bairro;
+                            document.getElementById('cidade').value = data.localidade;
+                            document.getElementById('enderecoEncontrado').value = "true";
+                        } else {
+                            liberarCamposEndereco();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao buscar o CEP:", error);
+                        liberarCamposEndereco();
+                    });
+            }
+        });
+
+        function liberarCamposEndereco() {
+            ['rua', 'bairro', 'cidade'].forEach(id => {
+                const input = document.getElementById(id);
+                input.removeAttribute('readonly');
+                input.value = '';
+            });
+            document.getElementById('enderecoEncontrado').value = "false";
+        }
+
+        function statusTexto() {
+            const status = document.getElementById('status').checked;
+
+            document.getElementById('statusTexto').textContent = status ? 'Ativo' : 'Inativo';
+        }
+
+    </script>
+}
