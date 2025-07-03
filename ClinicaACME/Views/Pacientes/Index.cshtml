@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Lista de Pacientes";
-    string statusFiltro = ViewBag.FiltroStatus;
+    string filtroStatus = ViewBag.FiltroStatus as string ?? "";
 }
 
 <div class="text-center">
@@ -14,7 +14,28 @@
         </button>
     </div>
     <br />
-
+    <form method="get" action="/Pacientes/Index" class="row g-2 align-items-end mb-4">
+        <div class="col-md-4">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="@(ViewBag.FiltroNome as string ?? "")" placeholder="Digite o nome do paciente" />
+        </div>
+        <div class="col-md-4">
+            <label for="cpf" class="form-label">CPF</label>
+            <input type="text" class="form-control" id="cpf" name="cpf" value="@(ViewBag.FiltroCPF as string ?? "")" placeholder="Digite o CPF" />
+        </div>
+        <div class="col-md-4">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" class="form-select mb-1">
+                <option value="">Status</option>
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </form>
+    <br />
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
@@ -67,6 +88,7 @@
         </tbody>
     </table>
 </div>
+
 <div class="modal fade" id="modalPaciente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
         <div class="modal-content">
@@ -75,20 +97,39 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
+                @if (ViewData.ModelState.ContainsKey("CpfDuplicado"))
+                {
+                    <div class="card border-danger mb-3">
+                        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Erro de Validação
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                        </div>
+                        <div class="card-body text-danger">
+                            <ul class="mb-0">
+                                @foreach (var erro in ViewData.ModelState["CpfDuplicado"].Errors)
+                                {
+                                    <li>@erro.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
                 <form method="post" id="formPaciente" asp-action="Create" asp-controller="Pacientes" class="container-fluid">
                     <input type="hidden" id="Id" name="Id" />
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="nome" class="form-label">Nome</label>
-                            <input type="text" class="form-control" id="nome" name="Nome" placeholder="Nome do paciente">
+                            <input type="text" class="form-control" id="nome" name="Nome" placeholder="Nome do paciente" required>
                         </div>
                         <div class="col-md-3">
                             <label for="dataNascimento" class="form-label">Data de Nascimento</label>
-                            <input type="date" class="form-control" id="dataNascimento" name="DataNascimento">
+                            <input type="date" class="form-control" id="dataNascimento" name="DataNascimento" required>
                         </div>
                         <div class="col-md-3">
                             <label for="cpf" class="form-label">CPF</label>
-                            <input type="text" class="form-control" id="cpf" name="CPF" placeholder="CPF">
+                            <input type="text" class="form-control" id="cpf" name="CPF" placeholder="CPF" required>
                         </div>
                     </div>
 
@@ -109,25 +150,25 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="cep" class="form-label">CEP</label>
-                                <input type="text" class="form-control" id="cep" name="Endereco.CEP" maxlength="9" />
+                                <input type="text" class="form-control" id="cep" name="Endereco.CEP" maxlength="9" required />
                             </div>
                             <div class="col-md-8">
                                 <label for="rua" class="form-label">Rua</label>
-                                <input type="text" class="form-control" id="rua" name="Endereco.Rua" readonly />
+                                <input type="text" class="form-control" id="rua" name="Endereco.Rua" readonly required />
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-2">
                                 <label for="nro" class="form-label">Número</label>
-                                <input type="text" class="form-control" id="nro" name="Endereco.Nro" />
+                                <input type="text" class="form-control" id="nro" name="Endereco.Nro" required />
                             </div>
                             <div class="col-md-5">
                                 <label for="bairro" class="form-label">Bairro</label>
-                                <input type="text" class="form-control" id="bairro" name="Endereco.Bairro" readonly />
+                                <input type="text" class="form-control" id="bairro" name="Endereco.Bairro" readonly required />
                             </div>
                             <div class="col-md-5">
                                 <label for="cidade" class="form-label">Cidade</label>
-                                <input type="text" class="form-control" id="cidade" name="Endereco.Cidade" readonly />
+                                <input type="text" class="form-control" id="cidade" name="Endereco.Cidade" readonly required />
                             </div>
                         </div>
                         <div class="row mb-2">
@@ -154,7 +195,6 @@
 </div>
 @section Scripts {
     <script>
-
         document.querySelectorAll('.btnEditarPaciente').forEach(btn => {
             btn.addEventListener('click', function() {
 

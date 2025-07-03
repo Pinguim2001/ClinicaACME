@@ -7,8 +7,8 @@ namespace ClinicaACME.Controllers
 {
     public class PacientesController : Controller
     {
-        public IActionResult Index(string nome, string cpf)
-        {
+        public IActionResult Index(string nome, string cpf, bool? status)
+            {
             var pacientes = Repositorio.Repositorio.Pacientes.AsQueryable();
 
             if (!string.IsNullOrEmpty(nome))
@@ -17,22 +17,24 @@ namespace ClinicaACME.Controllers
             if (!string.IsNullOrEmpty(cpf))
                 pacientes = pacientes.Where(p => p.CPF.Contains(cpf));
 
+            if (status != null) 
+                pacientes = pacientes.Where(p => p.Status == status);
+
+
             return View(pacientes.ToList());
         }
 
         [HttpPost]
         public IActionResult Create(Paciente paciente)
         {
-
-            if (!ModelState.IsValid)
-                return BadRequest("Dados inválidos");
-
             var cpf = Repositorio.Repositorio.Pacientes
-                .Any(p => p.CPF == paciente.CPF && p.Id != paciente.Id);
-            if (cpf)
-                return BadRequest("CPF já cadastrado.");
+               .Any(p => p.CPF == paciente.CPF && p.Id != paciente.Id);
 
-
+            if (!ModelState.IsValid || cpf)
+            {
+                ModelState.AddModelError("CpfDuplicado", "CPF já cadastrado.");
+                return View(paciente);
+            }
 
             if (paciente.Id == 0 || paciente.Id == null)
             {

@@ -8,8 +8,7 @@ namespace ClinicaACME.Models
 
         [Required]  
         public int PacienteId { get; set; }
-        [Required]
-        public Paciente Paciente { get; set; } = null!;
+        public Paciente? Paciente { get; set; }
 
         [Required]
         public DateTime Data {  get; set; }
